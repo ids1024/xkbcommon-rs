@@ -797,13 +797,16 @@ impl Keymap {
     /// The returned string is dynamically allocated and should be freed by the
     /// caller.
     #[must_use]
-    pub fn get_as_string(&self, format: KeymapFormat) -> String {
+    pub fn get_as_string(&self, format: KeymapFormat) -> Option<String> {
         unsafe {
             let ffistr = xkb_keymap_get_as_string(self.ptr, format);
+            if ffistr.is_null() {
+                return None;
+            }
             let cstr = CStr::from_ptr(ffistr);
             let res = String::from_utf8_unchecked(cstr.to_bytes().to_owned());
             libc::free(ffistr.cast());
-            res
+            Some(res)
         }
     }
 
